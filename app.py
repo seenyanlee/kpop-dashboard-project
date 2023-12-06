@@ -30,17 +30,17 @@ data.head()
 
 # %%
 # Extract required columns
-df = data[["Full Name", "Group", "Former Group", "Date of Birth", "Debut", "Country", "Gender"]]
+df = data[["Full Name", "Stage Name", "Group", "Former Group", "Date of Birth", "Debut", "Country", "Gender"]]
 
 dfSummary(df)
 
 # %%
 # Drop rows where Full Name is missing (unable to identify) and Debut is filled with a placeholder date (not yet debuted)
-df = df.loc[df["Full Name"].isnull() is False]
+df = df.loc[df["Full Name"].isnull() == False]
 df = df.loc[df["Debut"] != "0/01/1900"]
 
 # Convert columns to required datatypes
-df = df.astype({"Full Name": str, "Group": str, "Former Group": str, "Country": str, "Gender": str})
+df = df.astype({"Full Name": str, "Stage Name": str, "Group": str, "Former Group": str, "Country": str, "Gender": str})
 df["Date of Birth"] = pd.to_datetime(df["Date of Birth"], format = "%d/%m/%Y")
 df["Debut"] = pd.to_datetime(df["Debut"], format = "%d/%m/%Y")
 
@@ -94,8 +94,8 @@ bday2 = df.groupby(['Birth Year']).count()['Full Name'].iloc[1:]
 bday2.rename('Idol count', inplace = True)
 
 # %%
-fig_bday2 = px.bar(bday2, x = bday2.index, y = 'Idol count', title = 'Birth year distribution of K-Pop idols',
-             color = 'Idol count')
+fig_bday2 = px.bar(bday2, x = bday2.index, y = 'Idol count', 
+                   title = 'Birth year distribution of K-Pop idols', color = 'Idol count')
 
 fig_bday2.update_layout(
     xaxis = dict(
@@ -115,8 +115,8 @@ bday2a.rename('Idol count', inplace = True)
 bday2a = bday2a.reset_index()
 
 # %%
-fig_bday2a = px.bar(bday2a, x = 'Birth Year', y = 'Idol count', title = 'Birth year distribution of K-Pop idols by gender', 
-             color = 'Gender', barmode = 'group')
+fig_bday2a = px.bar(bday2a, x = 'Birth Year', y = 'Idol count', barmode = 'group',
+                    title = 'Birth year distribution of K-Pop idols by gender', color = 'Gender')
 
 fig_bday2a.update_layout(
     xaxis = dict(
@@ -137,8 +137,8 @@ bday3 = df.groupby(['Birth Month']).count()['Full Name'].iloc[1:]
 bday3.rename('Idol count', inplace = True)
 
 # %%
-fig_bday3 = px.bar(bday3, x = bday3.index, y = 'Idol count', title = 'Birth month distribution of K-Pop idols',
-             color = 'Idol count')
+fig_bday3 = px.bar(bday3, x = bday3.index, y = 'Idol count', 
+                   title = 'Birth month distribution of K-Pop idols', color = 'Idol count')
 
 fig_bday3.update_layout(
     xaxis = dict(
@@ -158,8 +158,8 @@ bday3a.rename('Idol count', inplace = True)
 bday3a = bday3a.reset_index()
 
 # %%
-fig_bday3a = px.bar(bday3a, x = 'Birth Month', y = 'Idol count', title = 'Birth month distribution of K-Pop idols by gender',
-             color = 'Gender', barmode = 'group')
+fig_bday3a = px.bar(bday3a, x = 'Birth Month', y = 'Idol count', barmode = 'group',
+                    title = 'Birth month distribution of K-Pop idols by gender', color = 'Gender')
 
 fig_bday3a.update_layout(
     xaxis = dict(
@@ -189,8 +189,8 @@ debut2 = df.groupby(['Debut Month']).count()['Full Name'].iloc[1:]
 debut2.rename('Idol count', inplace = True)
 
 # %%
-fig_debut2 = px.bar(debut2, x = debut2.index, y = 'Idol count', title = 'Debut month distribution of K-Pop idols',
-             color = 'Idol count')
+fig_debut2 = px.bar(debut2, x = debut2.index, y = 'Idol count', 
+                    title = 'Debut month distribution of K-Pop idols', color = 'Idol count')
 
 fig_debut2.update_layout(
     xaxis = dict(
@@ -223,8 +223,8 @@ debut4 = df.groupby(['Debut Year']).count()['Full Name']
 debut4.rename('Idol count', inplace = True)
 
 # %%
-fig_debut4 = px.bar(debut4, x = debut4.index, y = 'Idol count', title = 'Number of debuted K-Pop idols per year',
-             color = 'Idol count')
+fig_debut4 = px.bar(debut4, x = debut4.index, y = 'Idol count', 
+                    title = 'Number of debuted K-Pop idols per year', color = 'Idol count')
 
 fig_debut4.update_layout(
     xaxis = dict(
@@ -245,8 +245,8 @@ debut5 = df[['Group', 'Debut Year']].groupby(['Debut Year']).nunique()['Group']
 debut5.rename('Group count', inplace = True)
 
 # %%
-fig_debut5 = px.bar(debut5, x = debut5.index, y = 'Group count', title = 'Number of debuted K-Pop groups per year',
-             color = 'Group count')
+fig_debut5 = px.bar(debut5, x = debut5.index, y = 'Group count', 
+                    title = 'Number of debuted K-Pop groups per year', color = 'Group count')
 
 fig_debut5.update_layout(
     xaxis = dict(
@@ -285,7 +285,7 @@ meta2.rename('Group count', inplace = True)
 meta2.index.name = 'Number of members'
 
 # %%
-fig_meta2 = px.bar(meta2, x = meta2.index, y = 'Group count', title = 'Number of members per K-Pop group',
+fig_meta2 = px.bar(meta2, x = meta2.index, y = 'Group count', title = 'Number of members per K-Pop group', 
              color = 'Group count')
 
 fig_meta2.update_layout(
@@ -310,7 +310,8 @@ meta3.index.name = 'Country / region of origin'
 # meta3
 
 # %%
-fig_meta3 = px.pie(meta3, values = 'Idol count', names = meta3.index, title = 'Country / region of origin ratio of K-Pop idols')
+fig_meta3 = px.pie(meta3, values = 'Idol count', names = meta3.index, 
+                   title = 'Country / region of origin ratio of K-Pop idols')
 
 # fig_meta3.show()
 
@@ -331,27 +332,56 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.PULSE])
 H2_STYLE = 'my-4 ms-2 me-2 text-primary border-bottom border-primary'
 H3_STYLE = 'mt-4 mb-3 ms-4 opacity-75'
 TAB_STYLE = 'bg-primary bg-gradient bg-opacity-50 text-black'
-TAB_SELECTED_STYLE = 'bg-light bg-gradient text-primary mx-2'
+ACTIVE_TAB_STYLE = 'bg-light bg-gradient'
+ACTIVE_LABEL_STYLE = 'text-primary fw-bold border border-primary'
 
 # %%
 app.layout = html.Div([
         html.H1('K-Pop Data Visualisations', className='mt-5 mb-2 ms-2 me-2 bg-primary bg-opacity-50 text-dark rounded'),
-        html.A('Find data source here', href='https://www.kaggle.com/datasets/nicolsalayoarias/all-kpop-idols/?select=kpopidolsv3.csv', className='mb-4 ms-2'),
+        html.A(
+                'Find data source here', 
+                href='https://www.kaggle.com/datasets/nicolsalayoarias/all-kpop-idols/?select=kpopidolsv3.csv', 
+                className='mb-4 ms-2'
+            ),
         html.Div([
             html.H2('Idol Birthday Analysis', className=H2_STYLE),
             html.Div([
                 html.H3('Idol birth year distribution', className=H3_STYLE),
-                dcc.Tabs(id="tabs-birth-year", value='overall-birth-year', className='mx-2', children=[
-                    dcc.Tab(label='Overall', value='overall-birth-year', className=TAB_STYLE, selected_className=TAB_SELECTED_STYLE),
-                    dcc.Tab(label='Male / Female', value='splitted-birth-year', className=TAB_STYLE, selected_className=TAB_SELECTED_STYLE),
+                dbc.Tabs(id="tabs-birth-year", active_tab='overall-birth-year', class_name='mx-2', children=[
+                    dbc.Tab(
+                            label='Overall', 
+                            tab_id='overall-birth-year', 
+                            class_name=TAB_STYLE, 
+                            activeTabClassName=ACTIVE_TAB_STYLE, 
+                            activeLabelClassName=ACTIVE_LABEL_STYLE
+                        ),
+                    dbc.Tab(
+                            label='Male / Female', 
+                            tab_id='splitted-birth-year', 
+                            class_name=TAB_STYLE, 
+                            activeTabClassName=ACTIVE_TAB_STYLE, 
+                            activeLabelClassName=ACTIVE_LABEL_STYLE
+                        ),
                 ]),
                 html.Div(id='tabs-content-birth-year')
             ]),
             html.Div([
                 html.H3('Idol birth month distribution', className=H3_STYLE),
-                dcc.Tabs(id="tabs-birth-month", value='overall-birth-month', className='mx-2', children=[
-                    dcc.Tab(label='Overall', value='overall-birth-month', className=TAB_STYLE, selected_className=TAB_SELECTED_STYLE),
-                    dcc.Tab(label='Male / Female', value='splitted-birth-month', className=TAB_STYLE, selected_className=TAB_SELECTED_STYLE),
+                dbc.Tabs(id="tabs-birth-month", active_tab='overall-birth-month', class_name='mx-2', children=[
+                    dbc.Tab(
+                            label='Overall', 
+                            tab_id='overall-birth-month', 
+                            class_name=TAB_STYLE, 
+                            activeTabClassName=ACTIVE_TAB_STYLE, 
+                            activeLabelClassName=ACTIVE_LABEL_STYLE
+                        ),
+                    dbc.Tab(
+                            label='Male / Female', 
+                            tab_id='splitted-birth-month', 
+                            class_name=TAB_STYLE, 
+                            activeTabClassName=ACTIVE_TAB_STYLE, 
+                            activeLabelClassName=ACTIVE_LABEL_STYLE
+                        ),
                 ]),
                 html.Div(id='tabs-content-birth-month')
             ]),
@@ -385,11 +415,25 @@ app.layout = html.Div([
                 html.H3('Country of origin distribution of idols', className=H3_STYLE),
                 dcc.Graph(figure=fig_meta3, className='mx-2')
             ])
+        ]),
+        html.Div([
+            html.H2('Interactive analysis', className=H2_STYLE),
+            html.Div([
+                html.H3('List of foreign idols', className=H3_STYLE),
+                dcc.Dropdown(
+                    id='dropdown-foreign', 
+                    options=sorted([i for i in list(df["Country"].unique()) if i != "South Korea"]), 
+                    searchable=True,
+                    placeholder='Select a country / region...',
+                    className='mx-4'
+                ),
+                html.Div(id='dropdown-content-foreign')
+            ])
         ])
 ])
 
 # Render tabs for birth year analysis
-@callback(Output('tabs-content-birth-year', 'children'), Input('tabs-birth-year', 'value'))
+@callback(Output('tabs-content-birth-year', 'children'), Input('tabs-birth-year', 'active_tab'))
 def render_content(tab):
     if tab == 'overall-birth-year':
         return html.Div([
@@ -399,9 +443,9 @@ def render_content(tab):
         return html.Div([
             dcc.Graph(figure=fig_bday2a, className='mx-2')
         ])
-
+    
 # Render tabs for birth month analysis
-@callback(Output('tabs-content-birth-month', 'children'), Input('tabs-birth-month', 'value'))
+@callback(Output('tabs-content-birth-month', 'children'), Input('tabs-birth-month', 'active_tab'))
 def render_content(tab):
     if tab == 'overall-birth-month':
         return html.Div([
@@ -411,10 +455,17 @@ def render_content(tab):
         return html.Div([
             dcc.Graph(figure=fig_bday3a, className='mx-2')
         ])
+    
+# Render dropdown menu for list of foreign idols
+@callback(Output('dropdown-content-foreign', 'children'), Input('dropdown-foreign', 'value'))
+def update_output(value):
+    return dbc.Table.from_dataframe(df[df["Country"] == value][["Stage Name", "Group"]], hover=True, class_name='mx-4', color='light')
 
 # %% [markdown]
-# ### Run dashboard
+# ### Run dashboard 
 
 # %%
 if __name__ == '__main__':
     app.run(debug = True)
+
+
