@@ -36,7 +36,7 @@ dfSummary(df)
 
 # %%
 # Drop rows where Full Name is missing (unable to identify) and Debut is filled with a placeholder date (not yet debuted)
-df = df.loc[df["Full Name"].isnull() == False]
+df = df.loc[df["Full Name"].isnull() is False]
 df = df.loc[df["Debut"] != "0/01/1900"]
 
 # Convert columns to required datatypes
@@ -105,8 +105,6 @@ fig_bday2.update_layout(
     )
 )
 
-# fig_bday2.show()
-
 # %%
 # Part 2: Group by birth year and gender on all idols
 bday2a = df.groupby(['Gender', 'Birth Year']).count()['Full Name']
@@ -125,8 +123,6 @@ fig_bday2a.update_layout(
         dtick = 1
     )
 )
-
-# fig_bday2a.show()
 
 # %% [markdown]
 # 3. Bar plot: idol birth month distribution (all / male / female)
@@ -148,8 +144,6 @@ fig_bday3.update_layout(
     )
 )
 
-# fig_bday3.show()
-
 # %%
 # Part 2: Group by birth month and gender on all idols
 bday3a = df.groupby(['Gender', 'Birth Month']).count()['Full Name']
@@ -168,8 +162,6 @@ fig_bday3a.update_layout(
         ticktext = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     )
 )
-
-# fig_bday3a.show()
 
 # %% [markdown]
 # ### Debut analysis
@@ -199,8 +191,6 @@ fig_debut2.update_layout(
         ticktext = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     )
 )
-
-# fig_debut2.show()
 
 # %% [markdown]
 # 3. Bubble plot: debut age distribution (all / male / female)
@@ -234,8 +224,6 @@ fig_debut4.update_layout(
     )
 )
 
-# fig_debut4.show()
-
 # %% [markdown]
 # 5. Bar plot: number of debuted groups per year
 
@@ -256,8 +244,6 @@ fig_debut5.update_layout(
     )
 )
 
-# fig_debut5.show()
-
 # %% [markdown]
 # ### Meta-analysis
 
@@ -271,8 +257,6 @@ meta1.rename('Idol count', inplace = True)
 
 # %%
 fig_meta1 = px.pie(meta1, values = 'Idol count', names = meta1.index, title = 'Gender ratio of K-Pop idols')
-
-# fig_meta1.show()
 
 # %% [markdown]
 # 2. Bar plot: number of members per group
@@ -296,8 +280,6 @@ fig_meta2.update_layout(
     )
 )
 
-# fig_meta2.show()
-
 # %% [markdown]
 # 3. Pie chart: idol's country of origin distribution
 
@@ -307,13 +289,10 @@ meta3 = df.groupby(['Country']).count()['Full Name']
 meta3.rename('Idol count', inplace = True)
 meta3.index = np.where(meta3 < 3, 'Other countries', meta3.index)
 meta3.index.name = 'Country / region of origin'
-# meta3
 
 # %%
 fig_meta3 = px.pie(meta3, values = 'Idol count', names = meta3.index, 
                    title = 'Country / region of origin ratio of K-Pop idols')
-
-# fig_meta3.show()
 
 # %% [markdown]
 # ## Dashboard
@@ -428,6 +407,17 @@ app.layout = html.Div([
                     className='mx-4'
                 ),
                 html.Div(id='dropdown-content-foreign')
+            ]),
+            html.Div([
+                html.H3('List of groups by alphabet', className=H3_STYLE),
+                dcc.Dropdown(
+                    id='dropdown-alphabet', 
+                    options=list(i.upper() for i in map(chr, range(ord('a'), ord('z')+1))) + ["Others"], # generate alphabets A-Z in a list
+                    searchable=True,
+                    placeholder='Select an alphabet...',
+                    className='mx-4'
+                ),
+                html.Div(id='dropdown-content-alphabet')
             ])
         ])
 ])
@@ -459,7 +449,27 @@ def render_content(tab):
 # Render dropdown menu for list of foreign idols
 @callback(Output('dropdown-content-foreign', 'children'), Input('dropdown-foreign', 'value'))
 def update_output(value):
-    return dbc.Table.from_dataframe(df[df["Country"] == value][["Stage Name", "Group"]], hover=True, class_name='mx-4', color='light')
+    return dbc.Table.from_dataframe(df[df["Country"] == value][["Stage Name", "Group"]], hover=True, class_name='mx-4')
+
+# Render dropdown menu for list of groups
+@callback(Output('dropdown-content-alphabet', 'children'), Input('dropdown-alphabet', 'value'))
+def update_output(value):
+    sr_group = df["Group"].dropna()
+    if value != "Others":
+        return dbc.Table.from_dataframe(pd.DataFrame(sr_group[sr_group.str.startswith(str(value))]
+                                                        .sort_values(key=lambda col: col.str.lower())
+                                                        .unique(),
+                                                     columns=["Group names"]),
+                                        hover=True,
+                                        class_name='mx-4')
+    elif value == "Others":
+        return dbc.Table.from_dataframe(pd.DataFrame(sr_group[sr_group < "A"]
+                                                        .sort_values(key=lambda col: col.str.lower())
+                                                        .unique(),
+                                                     columns=["Group names"]),
+                                        hover=True,
+                                        class_name='mx-4')
+ 
 
 # %% [markdown]
 # ### Run dashboard 
