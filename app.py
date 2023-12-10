@@ -36,7 +36,7 @@ dfSummary(df)
 
 # %%
 # Drop rows where Full Name is missing (unable to identify) and Debut is filled with a placeholder date (not yet debuted)
-df = df.loc[df["Full Name"].isnull() is False]
+df = df.loc[df["Full Name"].isnull() == False]
 df = df.loc[df["Debut"] != "0/01/1900"]
 
 # Convert columns to required datatypes
@@ -314,113 +314,207 @@ TAB_STYLE = 'bg-primary bg-gradient bg-opacity-50 text-black'
 ACTIVE_TAB_STYLE = 'bg-light bg-gradient'
 ACTIVE_LABEL_STYLE = 'text-primary fw-bold border border-primary'
 
+# %% [markdown]
+# #### Define segments of layout below
+
+# %%
+layout_home = html.Div([
+    html.H1('K-Pop Data Visualisations', className='mt-5 mb-2 mx-2 bg-primary bg-opacity-50 text-dark rounded'),
+    html.P(
+        "This is a personal project on building a K-Pop themed dashboard using Dash. I do not own any data used in this analysis.",
+        className='mx-2'
+    ),
+    html.A(
+        'Find data source here', 
+        href='https://www.kaggle.com/datasets/nicolsalayoarias/all-kpop-idols/?select=kpopidolsv3.csv', 
+        className='mb-4 mx-2'
+    ),
+])
+
+# %%
+layout_birthday = html.Div([
+    html.H2('Idol Birthday Analysis', className=H2_STYLE),
+    html.Div([
+        html.H3('Idol birth year distribution', className=H3_STYLE),
+        dbc.Tabs(id="tabs-birth-year", active_tab='overall-birth-year', class_name='mx-2', children=[
+            dbc.Tab(
+                    label='Overall', 
+                    tab_id='overall-birth-year', 
+                    class_name=TAB_STYLE, 
+                    activeTabClassName=ACTIVE_TAB_STYLE, 
+                    activeLabelClassName=ACTIVE_LABEL_STYLE
+                ),
+            dbc.Tab(
+                    label='Male / Female', 
+                    tab_id='splitted-birth-year', 
+                    class_name=TAB_STYLE, 
+                    activeTabClassName=ACTIVE_TAB_STYLE, 
+                    activeLabelClassName=ACTIVE_LABEL_STYLE
+                ),
+        ]),
+        html.Div(id='tabs-content-birth-year')
+    ]),
+    html.Div([
+        html.H3('Idol birth month distribution', className=H3_STYLE),
+        dbc.Tabs(id="tabs-birth-month", active_tab='overall-birth-month', class_name='mx-2', children=[
+            dbc.Tab(
+                    label='Overall', 
+                    tab_id='overall-birth-month', 
+                    class_name=TAB_STYLE, 
+                    activeTabClassName=ACTIVE_TAB_STYLE, 
+                    activeLabelClassName=ACTIVE_LABEL_STYLE
+                ),
+            dbc.Tab(
+                    label='Male / Female', 
+                    tab_id='splitted-birth-month', 
+                    class_name=TAB_STYLE, 
+                    activeTabClassName=ACTIVE_TAB_STYLE, 
+                    activeLabelClassName=ACTIVE_LABEL_STYLE
+                ),
+        ]),
+        html.Div(id='tabs-content-birth-month')
+    ]),
+])
+
+# %%
+layout_debut = html.Div([
+    html.H2('Idol Debut Analysis', className=H2_STYLE),
+    html.Div([
+        html.H3('Idol debut month distribution', className=H3_STYLE),
+        dcc.Graph(figure=fig_debut2, className='mx-2'),
+    ]),
+    html.Div([
+        html.H3('Number of debuted idols per year', className=H3_STYLE),
+        dcc.Graph(figure=fig_debut4, className='mx-2'),
+    ]),
+    html.Div([
+        html.H3('Number of debuted groups per year', className=H3_STYLE),
+        dcc.Graph(figure=fig_debut5, className='mx-2'),
+    ]),
+])
+
+# %%
+layout_meta = html.Div([
+    html.H2('Meta-analysis', className=H2_STYLE),
+    html.Div([
+        html.H3('Gender ratio of idols', className=H3_STYLE),
+        dcc.Graph(figure=fig_meta1, className='mx-2'),
+    ]),
+    html.Div([
+        html.H3('Number of members per group', className=H3_STYLE),
+        dcc.Graph(figure=fig_meta2, className='mx-2'),
+    ]),
+    html.Div([
+        html.H3('Country of origin distribution of idols', className=H3_STYLE),
+        dcc.Graph(figure=fig_meta3, className='mx-2')
+    ])
+])
+
+# %%
+layout_interactive = html.Div([
+    html.H2('Interactive analysis', className=H2_STYLE),
+    html.Div([
+        html.H3('List of foreign idols', className=H3_STYLE),
+        dcc.Dropdown(
+            id='dropdown-foreign', 
+            options=sorted([i for i in list(df["Country"].unique()) if i != "South Korea"]), 
+            searchable=True,
+            placeholder='Select a country / region...',
+            className='mx-4'
+        ),
+        html.Div(id='dropdown-content-foreign')
+    ]),
+    html.Div([
+        html.H3('List of groups by alphabet', className=H3_STYLE),
+        dcc.Dropdown(
+            id='dropdown-alphabet', 
+            options=list(i.upper() for i in map(chr, range(ord('a'), ord('z')+1))) + ["Others"], # generate alphabets A-Z in a list
+            searchable=True,
+            placeholder='Select an alphabet...',
+            className='mx-4'
+        ),
+        html.Div(id='dropdown-content-alphabet')
+    ])
+])
+
+# %% [markdown]
+# #### Define sidebar layout
+
+# %%
+# Define sidebar styling
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "16rem",
+    "padding": "2rem 1rem",
+    "background-color": "#f8f9fa",
+}
+
+# Define padding for the page content
+CONTENT_STYLE = {
+    "margin-left": "18rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+}
+
+# %%
+sidebar = html.Div(
+    [
+        html.H2("Contents", className="display-6"),
+        html.Hr(),
+        dbc.Nav(
+            [
+                dbc.NavLink("Home", href="/", active="exact"),
+                dbc.NavLink("Birthday analysis", href="/page-1", active="exact"),
+                dbc.NavLink("Debut analysis", href="/page-2", active="exact"),
+                dbc.NavLink("Meta-analysis", href="/page-3", active="exact"),
+                dbc.NavLink("Interactive", href="/page-4", active="exact"),
+            ],
+            vertical=True,
+            pills=True,
+        ),
+        html.Div([
+            html.P(children=["© ", html.A("SY Lee", href='https://github.com/seenyanlee')], className='ms-2 position-absolute bottom-0')
+        ])
+    ],
+    style=SIDEBAR_STYLE,
+)
+
+content = html.Div(id="page-content", children=[], style=CONTENT_STYLE)
+
+# %% [markdown]
+# #### Combine dashboard layout and define callback functions
+
 # %%
 app.layout = html.Div([
-        html.H1('K-Pop Data Visualisations', className='mt-5 mb-2 ms-2 me-2 bg-primary bg-opacity-50 text-dark rounded'),
-        html.A(
-                'Find data source here', 
-                href='https://www.kaggle.com/datasets/nicolsalayoarias/all-kpop-idols/?select=kpopidolsv3.csv', 
-                className='mb-4 ms-2'
-            ),
-        html.Div([
-            html.H2('Idol Birthday Analysis', className=H2_STYLE),
-            html.Div([
-                html.H3('Idol birth year distribution', className=H3_STYLE),
-                dbc.Tabs(id="tabs-birth-year", active_tab='overall-birth-year', class_name='mx-2', children=[
-                    dbc.Tab(
-                            label='Overall', 
-                            tab_id='overall-birth-year', 
-                            class_name=TAB_STYLE, 
-                            activeTabClassName=ACTIVE_TAB_STYLE, 
-                            activeLabelClassName=ACTIVE_LABEL_STYLE
-                        ),
-                    dbc.Tab(
-                            label='Male / Female', 
-                            tab_id='splitted-birth-year', 
-                            class_name=TAB_STYLE, 
-                            activeTabClassName=ACTIVE_TAB_STYLE, 
-                            activeLabelClassName=ACTIVE_LABEL_STYLE
-                        ),
-                ]),
-                html.Div(id='tabs-content-birth-year')
-            ]),
-            html.Div([
-                html.H3('Idol birth month distribution', className=H3_STYLE),
-                dbc.Tabs(id="tabs-birth-month", active_tab='overall-birth-month', class_name='mx-2', children=[
-                    dbc.Tab(
-                            label='Overall', 
-                            tab_id='overall-birth-month', 
-                            class_name=TAB_STYLE, 
-                            activeTabClassName=ACTIVE_TAB_STYLE, 
-                            activeLabelClassName=ACTIVE_LABEL_STYLE
-                        ),
-                    dbc.Tab(
-                            label='Male / Female', 
-                            tab_id='splitted-birth-month', 
-                            class_name=TAB_STYLE, 
-                            activeTabClassName=ACTIVE_TAB_STYLE, 
-                            activeLabelClassName=ACTIVE_LABEL_STYLE
-                        ),
-                ]),
-                html.Div(id='tabs-content-birth-month')
-            ]),
-        ]),
-        html.Div([
-            html.H2('Idol Debut Analysis', className=H2_STYLE),
-            html.Div([
-                html.H3('Idol debut month distribution', className=H3_STYLE),
-                dcc.Graph(figure=fig_debut2, className='mx-2'),
-            ]),
-            html.Div([
-                html.H3('Number of debuted idols per year', className=H3_STYLE),
-                dcc.Graph(figure=fig_debut4, className='mx-2'),
-            ]),
-            html.Div([
-                html.H3('Number of debuted groups per year', className=H3_STYLE),
-                dcc.Graph(figure=fig_debut5, className='mx-2'),
-            ]),
-        ]),
-        html.Div([
-            html.H2('Meta-analysis', className=H2_STYLE),
-            html.Div([
-                html.H3('Gender ratio of idols', className=H3_STYLE),
-                dcc.Graph(figure=fig_meta1, className='mx-2'),
-            ]),
-            html.Div([
-                html.H3('Number of members per group', className=H3_STYLE),
-                dcc.Graph(figure=fig_meta2, className='mx-2'),
-            ]),
-            html.Div([
-                html.H3('Country of origin distribution of idols', className=H3_STYLE),
-                dcc.Graph(figure=fig_meta3, className='mx-2')
-            ])
-        ]),
-        html.Div([
-            html.H2('Interactive analysis', className=H2_STYLE),
-            html.Div([
-                html.H3('List of foreign idols', className=H3_STYLE),
-                dcc.Dropdown(
-                    id='dropdown-foreign', 
-                    options=sorted([i for i in list(df["Country"].unique()) if i != "South Korea"]), 
-                    searchable=True,
-                    placeholder='Select a country / region...',
-                    className='mx-4'
-                ),
-                html.Div(id='dropdown-content-foreign')
-            ]),
-            html.Div([
-                html.H3('List of groups by alphabet', className=H3_STYLE),
-                dcc.Dropdown(
-                    id='dropdown-alphabet', 
-                    options=list(i.upper() for i in map(chr, range(ord('a'), ord('z')+1))) + ["Others"], # generate alphabets A-Z in a list
-                    searchable=True,
-                    placeholder='Select an alphabet...',
-                    className='mx-4'
-                ),
-                html.Div(id='dropdown-content-alphabet')
-            ])
-        ])
+    dcc.Location(id="url"),
+    sidebar,
+    content
 ])
+
+# Render sidebar
+@callback(Output("page-content", "children"), Input("url", "pathname"))
+def render_page_content(pathname):
+    if pathname == "/":
+        return layout_home
+    elif pathname == "/page-1":
+        return layout_birthday
+    elif pathname == "/page-2":
+        return layout_debut
+    elif pathname == "/page-3":
+        return layout_meta
+    elif pathname == "/page-4":
+        return layout_interactive
+    # If the user tries to reach a different page, return a 404 message
+    return dbc.Jumbotron(
+        [
+            html.H1("404: Not found", className="text-danger"),
+            html.Hr(),
+            html.P(f"The pathname {pathname} was not recognised..."),
+        ]
+    )
 
 # Render tabs for birth year analysis
 @callback(Output('tabs-content-birth-year', 'children'), Input('tabs-birth-year', 'active_tab'))
